@@ -11,6 +11,20 @@
     "Street": street,
     "blank": blank,
   };
+  var getColor = function(d) {
+    if (0 < parseInt(d.properties.Heisoku2*100)) {
+      return "red";
+    } else {
+      return "gray";
+    }
+  };
+  var getOpacity = function(d) {
+    if (0 < parseInt(d.properties.Heisoku2*100)) {
+      return d.properties.Heisoku2;
+    } else {
+      return 0.0;
+    }
+  };
   var destination = L.marker([35.134484437244, 136.867128691108])
     .bindPopup("This is a refuge.");
   var map = L.map('map', {
@@ -48,10 +62,40 @@
         .style("opacity", 0);
     });
   });
+  var blockedOverlay = L.d3SvgOverlay(function(sel, proj) {
+    var featureElement = sel.selectAll('path').data(features);
+    featureElement.enter()
+      .append("path")
+      .attr({
+        "d": proj.pathFromGeojson,
+        "stroke": getColor,
+        "stroke-width": 2,
+        "opacity": getOpacity,
+      });
+    featureElement.on("mouseover", function(d) {
+      var latlng = d.geometry.coordinates[0];
+      var str = "";
+      Object.keys(d.properties).forEach(function(key) { str += key + ": " + d.properties[key] + "</br>" });
+      div.transition()
+        .duration(200)
+        .style("opacity", .9);
+      div.html(str)
+        .style("left", (d3.event.pageX) + "px")
+        .style("top", (d3.event.pageY - 28) + "px");
+    })
+    .on("mouseout", function(d) {
+      div.transition()
+        .duration(500)
+        .style("opacity", 0);
+    });
+  });
+
+
   var overlays = {
     "Show a base map": mapOverlay,
     "Show a refuge": popups,
   };
   d3.json("data/map.geojson",  function(data) { features = data.features; mapOverlay.addTo(map) });
   L.control.layers(baseLayers, overlays).addTo(map);
+  d3.json("data/map.geojson",  function(data) { features = data.features; blockedOverlay.addTo(map) });
 })();
