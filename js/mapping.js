@@ -101,15 +101,39 @@
         "stroke-width": 5,
       });
   });
+  var evacuationOverlay = L.d3SvgOverlay(function(sel, proj) {
+    var pathNode = d3.selectAll('.line').node();
+    var pathLength = pathNode.getTotalLength(); 
+    var circle = sel.append("circle")
+      .attr({
+        r: 10,
+        fill: 'blue',
+        transform: function () {
+          var p = pathNode.getPointAtLength(0)
+            return "translate(" + [p.x, p.y] + ")";
+        }
+      });
 
+    circle.transition()
+      .duration(5000)
+      .ease("linear")
+      .attrTween("transform", function (d, i) {
+        return function (t) {
+          var p = pathNode.getPointAtLength(pathLength*t);
+          return "translate(" + [p.x, p.y] + ")";
+        }
+      });
+  });
   var overlays = {
     "Show a base map": mapOverlay,
     "Show road blockage probability": blockedOverlay,
     "Show a refuge": popups,
     "Show a path": pathOverlay,
+    "Start Evacuation": evacuationOverlay,
   };
   d3.json("data/map.geojson",  function(data) { features = data.features; mapOverlay.addTo(map) });
   d3.json("data/map.geojson",  function(data) { features = data.features; blockedOverlay.addTo(map) });
   d3.json("data/path.geojson", function(data) { features = data; pathOverlay.addTo(map) });
+  d3.json("data/path.geojson", function(data) { features = data; evacuationOverlay.addTo(map) });
   L.control.layers(baseLayers, overlays).addTo(map);
 })();
