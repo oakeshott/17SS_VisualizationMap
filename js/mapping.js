@@ -89,14 +89,27 @@
         .style("opacity", 0);
     });
   });
-
+  var pathOverlay = L.d3SvgOverlay(function(sel, proj) {
+    var featureElement = sel.selectAll('.line').data([features]);
+    featureElement.enter()
+      .append("path")
+      .attr({
+        "class": "line",
+        "d": proj.pathFromGeojson,
+        "stroke": 'green',
+        "fill": "none",
+        "stroke-width": 5,
+      });
+  });
 
   var overlays = {
     "Show a base map": mapOverlay,
     "Show road blockage probability": blockedOverlay,
     "Show a refuge": popups,
+    "Show a path": pathOverlay,
   };
   d3.json("data/map.geojson",  function(data) { features = data.features; mapOverlay.addTo(map) });
   d3.json("data/map.geojson",  function(data) { features = data.features; blockedOverlay.addTo(map) });
+  d3.json("data/path.geojson", function(data) { features = data; pathOverlay.addTo(map) });
   L.control.layers(baseLayers, overlays).addTo(map);
 })();
