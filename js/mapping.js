@@ -93,9 +93,10 @@
 
   var overlays = {
     "Show a base map": mapOverlay,
+    "Show road blockage probability": blockedOverlay,
     "Show a refuge": popups,
   };
   d3.json("data/map.geojson",  function(data) { features = data.features; mapOverlay.addTo(map) });
-  L.control.layers(baseLayers, overlays).addTo(map);
   d3.json("data/map.geojson",  function(data) { features = data.features; blockedOverlay.addTo(map) });
+  L.control.layers(baseLayers, overlays).addTo(map);
 })();
